@@ -1,5 +1,6 @@
-#include <i2c_t3.h>
+#include <Wire.h>
 #include <SPI.h>
+#include <i2c_t3.h>
 
 #define MS5637_RESET      0x1E
 #define NS5637_CONVERT_D1 0x40
@@ -271,7 +272,7 @@ double Temperature, Pressure;
 int16_t accelCount[3];
 int16_t gyroCount[3];
 int16_t magCount[3];
-float gyroBias[3] = {0, 0, 0}, accelBias = {0, 0, 0}, magBias[3] = {0, 0, 0};
+float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0}, magBias[3] = {0, 0, 0};
 int16_t tempCount;
 float temperature;
 float SelfTest[6];
@@ -297,9 +298,8 @@ float eInt[3] = {0.0f, 0.0f, 0.0f};
 
 void setup()
 {
-  Wire.begin(I2C_Master, 0x00, I2C_PINS_16_17, I2C_PULLUP_EXT, I2C_RATE_400);
-  delay(5000);
   Serial.begin(38400);
+  Wire.begin();
   Serial.println("BMX055 Accelerometer..");
   byte c = readByte(BMX055_ACC_ADDRESS, BMX055_ACC_WHOAMI);
   Serial.print("BMX055 ACC");
@@ -354,7 +354,7 @@ void setup()
     Serial.print("C6 = ");
     Serial.println(Pcal[6]);
 
-    CRC = MS5637checkCRC(Pcal);  //calculate checksum to ensure integrity of MS5637 calibration data
+    nCRC = MS5637checkCRC(Pcal);  //calculate checksum to ensure integrity of MS5637 calibration data
     Serial.print("Checksum = ");
     Serial.print(nCRC);
     Serial.print(" , should be ");
@@ -957,7 +957,7 @@ void magcalBMX055(float * dest1)
         for (uint8_t ii = 0; ii < 7; ii++) {
           Wire.beginTransmission(MS5637_ADDRESS);  // Initialize the Tx buffer
           Wire.write(0xA0 | ii << 1);              // Put PROM address in Tx buffer
-          Wire.endTransmission(I2C_NOSTOP);        // Send the Tx buffer, but send a restart to keep connection alive
+          Wire.endTransmission();        // Send the Tx buffer, but send a restart to keep connection alive
     uint8_t i = 0;
           Wire.requestFrom(MS5637_ADDRESS, 2);   // Read two bytes from slave PROM address 
     while (Wire.available()) {
@@ -971,7 +971,7 @@ void magcalBMX055(float * dest1)
         uint8_t data[3] = {0,0,0};
         Wire.beginTransmission(MS5637_ADDRESS);  // Initialize the Tx buffer
         Wire.write(CMD | OSR);                  // Put pressure conversion command in Tx buffer
-        Wire.endTransmission(I2C_NOSTOP);        // Send the Tx buffer, but send a restart to keep connection alive
+        Wire.endTransmission();        // Send the Tx buffer, but send a restart to keep connection alive
         
         switch (OSR)
         {
@@ -985,7 +985,7 @@ void magcalBMX055(float * dest1)
        
         Wire.beginTransmission(MS5637_ADDRESS);  // Initialize the Tx buffer
         Wire.write(0x00);                        // Put ADC read command in Tx buffer
-        Wire.endTransmission(I2C_NOSTOP);        // Send the Tx buffer, but send a restart to keep connection alive
+        Wire.endTransmission();        // Send the Tx buffer, but send a restart to keep connection alive
   uint8_t i = 0;
         Wire.requestFrom(MS5637_ADDRESS, 3);     // Read three bytes from slave PROM address 
   while (Wire.available()) {
@@ -1033,7 +1033,7 @@ unsigned char MS5637checkCRC(uint16_t * n_prom)  // calculate checksum from PROM
   uint8_t data; // `data` will store the register data   
   Wire.beginTransmission(address);         // Initialize the Tx buffer
   Wire.write(subAddress);                  // Put slave register address in Tx buffer
-  Wire.endTransmission(I2C_NOSTOP);        // Send the Tx buffer, but send a restart to keep connection alive
+  Wire.endTransmission();        // Send the Tx buffer, but send a restart to keep connection alive
 //  Wire.endTransmission(false);             // Send the Tx buffer, but send a restart to keep connection alive
 //  Wire.requestFrom(address, 1);  // Read one byte from slave register address 
   Wire.requestFrom(address, (size_t) 1);   // Read one byte from slave register address 
@@ -1045,7 +1045,7 @@ unsigned char MS5637checkCRC(uint16_t * n_prom)  // calculate checksum from PROM
 {  
   Wire.beginTransmission(address);   // Initialize the Tx buffer
   Wire.write(subAddress);            // Put slave register address in Tx buffer
-  Wire.endTransmission(I2C_NOSTOP);  // Send the Tx buffer, but send a restart to keep connection alive
+  Wire.endTransmission();  // Send the Tx buffer, but send a restart to keep connection alive
 //  Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
   uint8_t i = 0;
 //        Wire.requestFrom(address, count);  // Read bytes from slave register address 
