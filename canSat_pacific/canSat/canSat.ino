@@ -52,6 +52,8 @@ Adafruit_BMP280 bme;
 bool pressureFlag = false;
 bool imuFlag = false;
 
+unsigned short geigerClicks = 0;
+
 void setup() {
   //Begin Watchdog Setup
   cli();
@@ -136,6 +138,11 @@ void setup() {
   } else {
     imuFlag = false;
   }
+
+  //Setup Geiger
+  pinMode(2,INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(2),geiger_click,RISING);
+  
   // Done with setup
   sysFile.close();
 
@@ -155,7 +162,7 @@ void setup() {
      dataFile.println("-------------------------------------");
      dataFile.print(F("YYYY, MM, DD, HH, MM, SS, 1050_T(C), 1050_Humidity, 280_T(C), Pressure(Pa)"));
      dataFile.print(F(", Accel_x(g), Accel_y, Accel_z, Gyro_x(degrees/sec), Gyro_y, Gyro_z, Mag_x(milliGauss), "));
-     dataFile.println(F("Mag_y, Mag_z, Mag_hall (raw), Methane(V), Ozone(Ohms)"));
+     dataFile.println(F("Mag_y, Mag_z, Mag_hall (raw), Methane(V), Ozone(Ohms), Geiger (Clicks)"));
      dataFile.close();
   }
 
@@ -246,8 +253,13 @@ void loop() {
     temp = analogRead(A1);
     float ozoneRes = (3.3*temp)/1024.0;
     ozoneRes = (10000/(3.3 - ozoneRes))*ozoneRes;
-    dataFile.println(ozoneRes);
+    dataFile.print(ozoneRes);
+    dataFile.print(", ");
 
+    //Geiger
+    dataFile.println(geigerClicks);
+    geigerClicks = 0;
+    
     dataFile.close();
   }
   // if the file isn't open, pop up an error:
@@ -258,4 +270,8 @@ void loop() {
   delay(500);
 
   wdt_reset(); //Call this to reset the watchdog timer
+}
+
+void geiger_click(){
+  geigerClicks++;
 }
