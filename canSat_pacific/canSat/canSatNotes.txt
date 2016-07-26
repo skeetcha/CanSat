@@ -12,3 +12,4 @@ Resolution is 124.87/32768.0; // per data sheet, not exactly 125!?
 // magnetometer resolution is 1 microTesla/16 counts or 1/1.6 milliGauss/count
      mRes = 1./1.6;
      
+Place libraries folder inside Arduino folder to compile.
