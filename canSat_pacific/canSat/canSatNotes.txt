@@ -1,0 +1,14 @@
+Text File with information about IMU
+
+Did not run all the calibration code; see BMX-055 code by Kris Winer for calibration procedure
+
+---- Accelerometer ---
+Resolution is 2.0/2048.0;
+
+---- Gyroscope ---
+Resolution is 124.87/32768.0; // per data sheet, not exactly 125!?
+
+---- Magnetometer ---
+// magnetometer resolution is 1 microTesla/16 counts or 1/1.6 milliGauss/count
+     mRes = 1./1.6;
+     
